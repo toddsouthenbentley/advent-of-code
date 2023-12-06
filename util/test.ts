@@ -58,8 +58,9 @@ function formatTestInput(input: string) {
 	return grayBar + "  " + blueBar + "      " + input.split("\n").join("\n" + grayBar + "  " + blueBar + "      ");
 }
 
-export function logTestResult(testCase: TestCase, result: string) {
-	if (testCase.expected === result) {
+export function logTestResult(testCase: TestCase, result: string, stopOnFailure = true) {
+	const succeeded = testCase.expected === result;
+	if (succeeded) {
 		testLog(`${grayBar}  ${blueBar} ${testIndex}.  ${chalk.greenBright("SUCCESS")}`);
 	} else {
 		testLog(`${grayBar}  ${blueBar} ${testIndex}.  ${chalk.redBright("FAILED")}`);
@@ -68,8 +69,11 @@ export function logTestResult(testCase: TestCase, result: string) {
 		testLog(`${grayBar}  ${blueBar}     ${chalk.blackBright("┄┄┄┄┄┄┄┄┄┄┄┄┄┄  End")}`);
 		testLog(`${grayBar}  ${blueBar}     Expected: ${testCase.expected}`);
 		testLog(`${grayBar}  ${blueBar}     Actual  : ${chalk.yellowBright(result)}`);
+		if (stopOnFailure)
+			throw new Error("Stopping on failed test.");
 	}
 	testIndex++;
+	return succeeded;
 }
 
 export function normalizeTestCases(part1tests: TestCase[], part2tests: TestCase[]): [TestCase[], TestCase[]] {
@@ -95,7 +99,7 @@ export function normalizeTestCases(part1tests: TestCase[], part2tests: TestCase[
 			});
 		}
 	}
-	
+
 	return [p1testsNormalized, p2testsNormalized];
 }
 
