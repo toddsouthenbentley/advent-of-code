@@ -14,16 +14,84 @@ const DAY = 1;
 // problem url  : https://adventofcode.com/2023/day/1
 
 async function p2023day1_part1(input: string, ...params: any[]) {
-	return "Not implemented";
+	function lineVal(line: string) {
+		const first = [...line].find((c => isNumber(c)));
+		const last = [...line].findLast((c) => isNumber(c));
+		return (first && last) ? Number(`${first}${last}`) : 0;
+	}
+
+	function isNumber(char: string) {
+		return char.length === 1 && char >= "1" && char <= "9";
+	}
+
+	var sum = 0;
+	input.split("\n").forEach((line => sum += lineVal(line)))
+	return sum.toString();
 }
 
 async function p2023day1_part2(input: string, ...params: any[]) {
-	return "Not implemented";
+	const replacements = new Map<string, string>([
+		["one", "1"],
+		["two", "2"],
+		["three", "3"],
+		["four", "4"],
+		["five", "5"],
+		["six", "6"],
+		["seven", "7"],
+		["eight", "8"],
+		["nine", "9"],
+	]);
+
+	const reverse = (line: string) => [...line].reverse().join("");
+
+	const getRegExp = (reversed = false) => {
+		let re = "(\\d)";
+		[...replacements.keys()].forEach((k) => re += `|(${reversed ? reverse(k): k})`);
+		return re;
+	}
+
+	const firstRegExp = new RegExp(getRegExp());
+	const lastRegExp = new RegExp(getRegExp(true));
+
+	function lineVal(line: string) {
+		const first = firstDigit(line);
+		const last = lastDigit(line);
+		return (first && last) ? Number(`${first}${last}`) : 0;
+	}
+
+	function firstDigit(line: string) {
+		const first = firstRegExp.exec(line)?.[0];
+		return (first && first.length > 1) ? replacements.get(first) : first;
+	}
+
+	function lastDigit(line: string) {
+		const last = lastRegExp.exec(reverse(line))?.[0];
+		return (last && last.length > 1) ? replacements.get(reverse(last)) : last;
+	}
+
+	var sum = 0;
+	input.split("\n").forEach((line => sum += lineVal(line)))
+	return sum.toString();
 }
 
 async function run() {
-	const part1tests: TestCase[] = [];
-	const part2tests: TestCase[] = [];
+	const part1tests: TestCase[] = [{
+		input: `1abc2
+pqr3stu8vwx
+a1b2c3d4e5f
+treb7uchet`,
+		expected: "142"
+	}];
+	const part2tests: TestCase[] = [{
+		input: `two1nine
+eightwothree
+abcone2threexyz
+xtwone3four
+4nineeightseven2
+zoneight234
+7pqrstsixteen`,
+		expected: "281"
+	}];
 
 	const [p1testsNormalized, p2testsNormalized] = normalizeTestCases(part1tests, part2tests);
 
