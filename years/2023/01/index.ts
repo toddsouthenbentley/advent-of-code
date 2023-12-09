@@ -1,10 +1,10 @@
-import _ from "lodash";
 import * as util from "../../../util/util";
 import * as test from "../../../util/test";
 import chalk from "chalk";
 import { log, logSolution, trace } from "../../../util/log";
 import { performance } from "perf_hooks";
 import { normalizeTestCases } from "../../../util/test";
+import { __, both, defaultTo, find, findLast, gte, join, juxt, lte, map, pipe, reverse, split, sum } from "ramda";
 
 const YEAR = 2023;
 const DAY = 1;
@@ -13,20 +13,23 @@ const DAY = 1;
 // data path    : /Users/todd/macdev/personal/advent-of-code/years/2023/01/data.txt
 // problem url  : https://adventofcode.com/2023/day/1
 
-async function p2023day1_part1(input: string, ...params: any[]) {
+async function p2023day1_part1Orig(input: string, ...params: any[]) {
+	const isNumber = (ch: string) => ch >= "1" && ch <= "9";
+
 	function lineVal(line: string) {
-		const first = [...line].find((c => isNumber(c)));
-		const last = [...line].findLast((c) => isNumber(c));
-		return (first && last) ? Number(`${first}${last}`) : 0;
+		const first = [...line].find((c => isNumber(c))) ?? "";
+		const last = [...line].findLast((c) => isNumber(c)) ?? "";
+		return Number(`${first}${last}`);
 	}
-
-	function isNumber(char: string) {
-		return char.length === 1 && char >= "1" && char <= "9";
-	}
-
 	var sum = 0;
 	input.split("\n").forEach((line => sum += lineVal(line)))
 	return sum.toString();
+}
+
+async function p2023day1_part1(input: string, ...params: any[]) {
+	const isNumber = both(lte("1"), gte("9"));
+	const lineVal = pipe(split(""), juxt([defaultTo("", find(isNumber)), defaultTo("", findLast(isNumber))]), join(""), Number);
+	return pipe(split("\n"), map(lineVal), sum)(input).toString();
 }
 
 async function p2023day1_part2(input: string, ...params: any[]) {
@@ -42,7 +45,7 @@ async function p2023day1_part2(input: string, ...params: any[]) {
 		["nine", "9"],
 	]);
 
-	const reverse = (line: string) => [...line].reverse().join("");
+	// const reverse = (line: string) => [...line].reverse().join("");
 
 	const getRegExp = (reversed = false) => {
 		let re = "(\\d)";
