@@ -6,7 +6,6 @@ import { log, logSolution, trace } from "../../../util/log";
 import { performance } from "perf_hooks";
 import { normalizeTestCases } from "../../../util/test";
 import * as R from "ramda";
-import { assert } from "console";
 
 const YEAR = 2023;
 const DAY = 5;

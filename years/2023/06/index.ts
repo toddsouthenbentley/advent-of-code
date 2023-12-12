@@ -5,6 +5,7 @@ import chalk from "chalk";
 import { log, logSolution, trace } from "../../../util/log";
 import { performance } from "perf_hooks";
 import { normalizeTestCases } from "../../../util/test";
+import * as R from "ramda";
 
 const YEAR = 2023;
 const DAY = 6;
@@ -14,16 +15,63 @@ const DAY = 6;
 // problem url  : https://adventofcode.com/2023/day/6
 
 async function p2023day6_part1(input: string, ...params: any[]) {
-	return "Not implemented";
+	const result = R.pipe(
+		R.split("\n"),
+		R.map(R.pipe(
+			R.split(/ +/),
+			R.drop(1),
+			R.map(Number)
+		)),
+		R.transpose,
+		R.map(([raceTime, raceDistance]) => {
+			let wins = 0;
+			for (let val = 1; val < raceTime; val++) {
+				const distance = (raceTime - val) * val;
+				if (distance > raceDistance)
+					wins++;
+			}
+			return wins;
+		}),
+		R.product,
+	)(input);
+	return result.toString();
 }
 
 async function p2023day6_part2(input: string, ...params: any[]) {
-	return "Not implemented";
+	const result = R.pipe(
+		R.split("\n"),
+		R.map(R.pipe(
+			R.replace(/ /g, ""),
+			R.split(/:/),
+			R.drop(1),
+			R.map(Number),
+		)),
+		R.transpose,
+		R.map(([raceTime, raceDistance]) => {
+			let wins = 0;
+			for (let val = 1; val < raceTime; val++) {
+				const distance = (raceTime - val) * val;
+				if (distance > raceDistance)
+					wins++;
+			}
+			return wins;
+		}),
+		R.sum,
+	)(input);
+	return result.toString();
 }
 
 async function run() {
-	const part1tests: TestCase[] = [];
-	const part2tests: TestCase[] = [];
+	const part1tests: TestCase[] = [{
+		input: `Time:      7  15   30
+Distance:  9  40  200`,
+		expected: "288"
+	}];
+	const part2tests: TestCase[] = [{
+		input: `Time:      7  15   30
+Distance:  9  40  200`,
+		expected: "71503"
+	}];
 
 	const [p1testsNormalized, p2testsNormalized] = normalizeTestCases(part1tests, part2tests);
 
