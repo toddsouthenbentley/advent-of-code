@@ -14,6 +14,16 @@ const DAY = 6;
 // data path    : /Users/todd/macdev/personal/advent-of-code/years/2023/06/data.txt
 // problem url  : https://adventofcode.com/2023/day/6
 
+const getRaceWins = ([raceTime, raceDistance]: number[]) => {
+	let wins = 0;
+	for (let val = 1; val < raceTime; val++) {
+		const distance = (raceTime - val) * val;
+		if (distance > raceDistance)
+			wins++;
+	}
+	return wins;
+}
+
 async function p2023day6_part1(input: string, ...params: any[]) {
 	const result = R.pipe(
 		R.split("\n"),
@@ -23,15 +33,7 @@ async function p2023day6_part1(input: string, ...params: any[]) {
 			R.map(Number)
 		)),
 		R.transpose,
-		R.map(([raceTime, raceDistance]) => {
-			let wins = 0;
-			for (let val = 1; val < raceTime; val++) {
-				const distance = (raceTime - val) * val;
-				if (distance > raceDistance)
-					wins++;
-			}
-			return wins;
-		}),
+		R.map(getRaceWins),
 		R.product,
 	)(input);
 	return result.toString();
@@ -47,15 +49,7 @@ async function p2023day6_part2(input: string, ...params: any[]) {
 			R.map(Number),
 		)),
 		R.transpose,
-		R.map(([raceTime, raceDistance]) => {
-			let wins = 0;
-			for (let val = 1; val < raceTime; val++) {
-				const distance = (raceTime - val) * val;
-				if (distance > raceDistance)
-					wins++;
-			}
-			return wins;
-		}),
+		R.map(getRaceWins),
 		R.sum,
 	)(input);
 	return result.toString();
