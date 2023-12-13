@@ -50,14 +50,14 @@ function getHandRank(hand: string): HandType {
 	return HandType.HighCard;
 }
 
-function getCardValues(hand: string) {
+function getCardValues(hand: string, jokers = false) {
 	const vals = R.pipe(
 		R.split(""),
 		R.map(R.compose(
 			R.replace(/A/g, "14"),
 			R.replace(/K/g, "13"),
 			R.replace(/Q/g, "12"),
-			R.replace(/J/g, "11"),
+			R.replace(/J/g, jokers ? "1": "11"),
 			R.replace(/T/g, "10"))
 		),
 		R.map(Number)
@@ -79,7 +79,18 @@ function compareHands(h1: string, h2: string) {
 }
 
 async function p2023day7_part1(input: string, ...params: any[]) {
-	return "Not implemented";
+	const result = R.pipe(
+		R.split("\n"),
+		R.map(R.split(" ")),
+		R.sort((r1, r2) => {
+			return compareHands(r1[0], r2[0]);
+		}),
+		R.map((r) => r[1]),
+		R.map(Number),
+		(bids) => bids.map((bid, index) => bid * (index + 1)),
+		R.sum,
+	)(input);
+	return result.toString();
 }
 
 async function p2023day7_part2(input: string, ...params: any[]) {
