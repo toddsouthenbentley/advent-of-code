@@ -24,35 +24,34 @@ enum HandType {
 	HighCard = 0,
 }
 
-function getHandRank(hand: string, jokers = false): HandType {
-	const handToCheck = jokers ? replaceJokers(hand) : hand;
-	const letterCounts = R.countBy(R.toUpper, handToCheck.split(""));
-	const counts = R.sort((a, b) => b - a, R.values(letterCounts));
-	switch (counts.length) {
-		case 1:
-			return HandType.FiveOfAKind;
-		case 2:
-			// full house or 4 of a kind
-			if (counts[0] === 4)
-				return HandType.FourOfAKind;
-			else
-				return HandType.FullHouse;
-		case 3:
-			// two pair or three of a kind
-			if (counts[0] === 3)
-				return HandType.ThreeOfAKind;
-			else
-				return HandType.TwoPair;
-		case 4:
-			return HandType.OnePair;
-		case 5:
-			return HandType.HighCard;
-
-	}
-	return HandType.HighCard;
-}
-
 function compareHands(h1: string, h2: string, jokers = false) {
+	function getHandRank(hand: string): HandType {
+		const handToCheck = jokers ? replaceJokers(hand) : hand;
+		const letterCounts = R.countBy(R.toUpper, handToCheck.split(""));
+		const counts = R.sort((a, b) => b - a, R.values(letterCounts));
+		switch (counts.length) {
+			case 1:
+				return HandType.FiveOfAKind;
+			case 2:
+				// full house or 4 of a kind
+				if (counts[0] === 4)
+					return HandType.FourOfAKind;
+				else
+					return HandType.FullHouse;
+			case 3:
+				// two pair or three of a kind
+				if (counts[0] === 3)
+					return HandType.ThreeOfAKind;
+				else
+					return HandType.TwoPair;
+			case 4:
+				return HandType.OnePair;
+			case 5:
+				return HandType.HighCard;
+
+		}
+		return HandType.HighCard;
+	}
 	function getCardValues(hand: string) {
 		const vals = R.pipe(
 			R.split(""),
@@ -68,9 +67,10 @@ function compareHands(h1: string, h2: string, jokers = false) {
 		return vals;
 	}
 
-	const s1 = getHandRank(h1, jokers);
-	const s2 = getHandRank(h2, jokers);
-	if (s1 !== s2) return s1 - s2;
+	const hDiff = getHandRank(h1) - getHandRank(h2);
+	if (hDiff !== 0)
+		return hDiff;
+
 	const diffs = R.pipe(
 		R.map(getCardValues),
 		R.transpose,
@@ -80,11 +80,11 @@ function compareHands(h1: string, h2: string, jokers = false) {
 	return diffs.length ? diffs[0]: 0;
 }
 
-async function p2023day7_part1(input: string, ...params: any[]) {
+function computeResult(input: string, jokers = false) {
 	const result = R.pipe(
 		R.split("\n"),
 		R.map(R.split(" ")),
-		R.sort((r1, r2) => compareHands(r1[0], r2[0])),
+		R.sort((r1, r2) => compareHands(r1[0], r2[0], jokers)),
 		R.pluck(1),
 		R.map(Number),
 		(bids) => bids.map((bid, index) => bid * (index + 1)),
@@ -93,54 +93,29 @@ async function p2023day7_part1(input: string, ...params: any[]) {
 	return result.toString();
 }
 
-// function cardValue(card: string, jokers = true) {
-// 	switch(card) {
-// 		case "A": return 14;
-// 		case "K": return 13;
-// 		case "Q": return 12;
-// 		case "J": return jokers ? 1 : 11;
-// 		case "T": return 10;
-// 		default: return Number(card);
-// 	}
-// }
-
-// function compareCards(c1: string, c2: string) {
-// 	return cardValue(c1) - cardValue(c2);
-// }
-
 function replaceJokers(hand: string) {
-	// find the card with the highest count, then the highest rank
+	// find the card with the highest count and replace with J's with it
 	const countsByCard = R.countBy(R.toUpper, hand.split(""));
 	if (!countsByCard["J"])
 		return hand;
-	const withoutJ = R.omit(["J"], countsByCard);
 	const highestCount = R.pipe(
 		R.toPairs,
-		R.sort(([card1, count1]: [string, number], [card2, count2]: [string, number]) => {
-			const countDiff = count1 - count2;
-			return countDiff;
-			// if (countDiff !== 0) return countDiff;
-			// return compareCards(card1, card2);
+		R.sort(([_card1, count1]: [string, number], [_card2, count2]: [string, number]) => {
+			return count1 - count2;
 		}),
 		R.takeLast(1),
 		R.flatten,
-	)(withoutJ);
-	const newHand = hand.replaceAll("J", highestCount[0] as string);
+	)(R.omit(["J"], countsByCard));
+	const newHand = hand.replaceAll("J", highestCount[0] as string ?? "A");
 	return newHand;
 }
 
+async function p2023day7_part1(input: string, ...params: any[]) {
+	return computeResult(input);
+}
+
 async function p2023day7_part2(input: string, ...params: any[]) {
-	const result = R.pipe(
-		R.split("\n"),
-		R.map(R.split(" ")),
- 	 	R.sort((r1, r2) => compareHands(r1[0], r2[0], true)),
-		// R.tap((x) => log(x)),
-		R.pluck(1),
-		R.map(Number),
-		(bids) => bids.map((bid, index) => bid * (index + 1)),
-		R.sum,
-	)(input);
-	return result.toString();
+	return computeResult(input, true);
 }
 
 async function run() {
