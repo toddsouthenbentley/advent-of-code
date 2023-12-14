@@ -16,7 +16,6 @@ const DAY = 8;
 
 type MapNode = {
 	label: string;
-	index: number;
 	leftNode: MapNode | undefined;
 	rightNode: MapNode | undefined;
 }
@@ -24,51 +23,50 @@ type MapNode = {
 function loadNodes(input: string) {
 	const nodes = new Map<string, MapNode>();
 	const cleanedUp = input.replaceAll(/[ ()]/g, "").split("\n");
-	const getOrCreateNode = (label: string, index: number) => {
+	const getOrCreateNode = (label: string) => {
 		let node = nodes.get(label);
 		if (!node) {
-			node = { label, index, leftNode: undefined, rightNode: undefined};
+			node = { label, leftNode: undefined, rightNode: undefined};
 			nodes.set(label, node);
 		}
 		return node;
 	}
-	cleanedUp.forEach((line, index) => {
+	cleanedUp.forEach((line) => {
 		const [label, left, right] = line.split(/[=,]/g);
-		const node = getOrCreateNode(label, index);
-		node.leftNode = getOrCreateNode(left, index);
-		node.rightNode = getOrCreateNode(right, index);
+		const node = getOrCreateNode(label);
+		node.leftNode = getOrCreateNode(left);
+		node.rightNode = getOrCreateNode(right);
 	});
 	return nodes;
+}
+
+function getSteps(currNode: MapNode | undefined, directions: string, condition: (n: MapNode) => boolean) {
+	let steps = BigInt(0);
+	let currDirection = 0;
+	while (currNode && !condition(currNode)) {
+		currNode = directions[currDirection] === "L" ? currNode.leftNode! : currNode.rightNode!;
+		steps++;
+		currDirection = (currDirection + 1) % directions.length;
+	}
+	return steps;
 }
 
 async function p2023day8_part1(input: string, ...params: any[]) {
 	const [directions, nodeInput] = input.split("\n\n");
 	const nodes = loadNodes(nodeInput);
-	let currNode = nodes.get("AAA");
-	let steps = 0;
-	let currDirection = 0;
-	while (currNode && currNode.label !== "ZZZ") {
-		currNode = directions[currDirection] === "L" ? currNode.leftNode : currNode.rightNode;
-		steps++;
-		currDirection = (currDirection + 1) % directions.length;
-	}
+	const steps = getSteps(nodes.get("AAA"), directions, (n) => n.label === "ZZZ");
 	return steps.toString();
 }
 
 async function p2023day8_part2(input: string, ...params: any[]) {
 	const [directions, nodeInput] = input.split("\n\n");
 	const nodes = loadNodes(nodeInput);
-	let currNodes = [...nodes.values()].filter((n) => n.label.endsWith("A")).sort((n1, n2) => n1.index - n2.index);
-	const allEndInZ = (nodeList: MapNode[]) => nodeList.every((n) => n.label.endsWith("Z"));
-	let steps = 0;
-	let currDirection = 0;
-
-	while (steps < 100000000 && !allEndInZ(currNodes)) {
-		currNodes = currNodes.map((n) => directions[currDirection] === "L" ? n.leftNode! : n.rightNode!)
-		steps++;
-		currDirection = (currDirection + 1) % directions.length;
-	}
-	return steps.toString();
+	let currNodes = [...nodes.values()].filter((n) => n.label.endsWith("A"));
+	const steps = currNodes.map((currNode) => {
+		return getSteps(currNode, directions, (n) => n.label.endsWith("Z"));
+	});
+	const result = util.lcm(steps);
+	return result.toString();
 }
 
 async function run() {
