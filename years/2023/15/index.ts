@@ -1,10 +1,10 @@
-import _ from "lodash";
 import * as util from "../../../util/util";
 import * as test from "../../../util/test";
 import chalk from "chalk";
 import { log, logSolution, trace } from "../../../util/log";
 import { performance } from "perf_hooks";
 import { normalizeTestCases } from "../../../util/test";
+import * as R from "ramda";
 
 const YEAR = 2023;
 const DAY = 15;
@@ -13,17 +13,71 @@ const DAY = 15;
 // data path    : /Users/todd/macdev/personal/advent-of-code/years/2023/15/data.txt
 // problem url  : https://adventofcode.com/2023/day/15
 
+function hashCode(input: string) {
+	return R.pipe(
+		R.split(""),
+		R.reduce((acc, c) => ((acc + c.charCodeAt(0)) * 17) % 256, 0),
+	)(input);
+}
+
 async function p2023day15_part1(input: string, ...params: any[]) {
-	return "Not implemented";
+	const sum = R.pipe(
+		R.split(","),
+		R.map(hashCode),
+		R.sum,
+	)(input);
+	return sum.toString();
+}
+
+type Lens = {
+	label: string,
+	focalLength: number
+}
+
+type Box = {
+	index: number;
+	lenses: Lens[];
 }
 
 async function p2023day15_part2(input: string, ...params: any[]) {
-	return "Not implemented";
+	const sum = R.pipe(
+		R.split(","),
+		R.reduce((boxes, step) => {
+			const [label, fl] = step.split(/[-=]/);
+			const index = hashCode(label);
+			if (boxes[index] === undefined)
+				boxes[index] = { index, lenses: []};
+			const lenses = boxes[index].lenses;
+			const lensIdx = lenses.findIndex((l) => l.label === label);
+			if (fl.length) {
+				const focalLength = Number(fl);
+				if (lensIdx >= 0) {
+					lenses[lensIdx].focalLength = focalLength;
+				} else {
+					lenses.push({ label, focalLength });
+				}
+			} else if (lensIdx >= 0) {
+				lenses.splice(lensIdx, 1);
+				if (lenses.length === 0)
+					delete boxes[index];
+			}
+			return boxes;
+		}, new Array<Box>()),
+		R.map((box) => box?.lenses?.reduce((boxSum, l, ii) => boxSum + (box.index + 1) * (ii + 1) * l.focalLength, 0) ?? 0),
+		R.sum,
+	)(input);
+	return sum.toString();
 }
 
 async function run() {
-	const part1tests: TestCase[] = [];
-	const part2tests: TestCase[] = [];
+	const part1tests: TestCase[] = [{
+		input: `rn=1,cm-,qp=3,cm=2,qp-,pc=4,ot=9,ab=5,pc-,pc=6,ot=7`,
+		expected: "1320"
+	}];
+	const part2tests: TestCase[] = [{
+		input: `rn=1,cm-,qp=3,cm=2,qp-,pc=4,ot=9,ab=5,pc-,pc=6,ot=7`,
+		expected: "145"
+	}];
 
 	const [p1testsNormalized, p2testsNormalized] = normalizeTestCases(part1tests, part2tests);
 
