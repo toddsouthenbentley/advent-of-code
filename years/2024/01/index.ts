@@ -13,17 +13,53 @@ const DAY = 1;
 // data path    : /Users/todd/projects/advent-of-code/years/2024/01/data.txt
 // problem url  : https://adventofcode.com/2024/day/1
 
+function loadData(input: string) {
+	const data = input.split("\n").map((line) => line.split(/\s+/).map(Number));
+	const l1 = data.map((line) => line[0]);
+	const l2 = data.map((line) => line[1]);
+  return { l1, l2 };
+}
+
 async function p2024day1_part1(input: string, ...params: any[]) {
-	return "Not implemented";
+  const { l1, l2 } = loadData(input);
+  l1.sort();
+  l2.sort();
+	let sum = 0;
+  l1.forEach((v1, i) => {
+		sum += Math.abs(v1 - l2[i]);
+	});
+	return sum.toString();
 }
 
 async function p2024day1_part2(input: string, ...params: any[]) {
-	return "Not implemented";
+  const { l1, l2 } = loadData(input);
+  let sum = 0;
+  l1.forEach((val) => {
+    const occ = l2.filter((v) => v === val).length;
+    sum += val * occ;
+  });
+  return sum.toString();
 }
 
 async function run() {
-	const part1tests: TestCase[] = [];
-	const part2tests: TestCase[] = [];
+	const part1tests: TestCase[] = [{
+		input: `3   4
+4   3
+2   5
+1   3
+3   9
+3   3`,
+		expected: "11",
+	}];
+	const part2tests: TestCase[] = [{
+		input: `3   4
+4   3
+2   5
+1   3
+3   9
+3   3`,
+		expected: "31",
+	}];
 
 	const [p1testsNormalized, p2testsNormalized] = normalizeTestCases(part1tests, part2tests);
 
