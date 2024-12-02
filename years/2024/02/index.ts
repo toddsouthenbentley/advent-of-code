@@ -13,17 +13,64 @@ const DAY = 2;
 // data path    : /Users/todd/projects/advent-of-code/years/2024/02/data.txt
 // problem url  : https://adventofcode.com/2024/day/2
 
+function loadData(input: string) {
+  const data = input.split("\n").map((line) => line.split(/\s+/).map(Number));
+  return data;
+}
+
+function isSafe(line: number[]) {
+  const diff = line[1] - line[0];
+  if (diff === 0 || Math.abs(diff) > 3) return false;
+  const decreasing = diff < 0;
+
+  const isSafe = line.slice(1).every((val, i) => {
+    const diff = val - line[i];
+    const currDecreasing = diff < 0;
+    return currDecreasing === decreasing && Math.abs(diff) > 0 && Math.abs(diff) <= 3;
+  });
+  return isSafe;
+}
+
 async function p2024day2_part1(input: string, ...params: any[]) {
-	return "Not implemented";
+  const data = loadData(input);
+  const numSafe = data.reduce((acc, line) => acc + (isSafe(line) ? 1 : 0), 0);
+  return numSafe.toString();
 }
 
 async function p2024day2_part2(input: string, ...params: any[]) {
-	return "Not implemented";
+  const data = loadData(input);
+  const numSafe = data.reduce((acc, line) => {
+    if (isSafe(line)) return acc + 1;
+    // remove one element at a time and see if it's safe
+    for (let i = 0; i < line.length; i++) {
+      if (isSafe([...line.slice(0, i), ...line.slice(i + 1)])) {
+        return acc + 1;
+      }
+    }
+    return acc;
+  }, 0);
+  return numSafe.toString();
 }
 
 async function run() {
-	const part1tests: TestCase[] = [];
-	const part2tests: TestCase[] = [];
+	const part1tests: TestCase[] = [{
+    input: `7 6 4 2 1
+1 2 7 8 9
+9 7 6 2 1
+1 3 2 4 5
+8 6 4 4 1
+1 3 6 7 9`,
+    expected: "2"
+	}];
+	const part2tests: TestCase[] = [{
+    input: `7 6 4 2 1
+1 2 7 8 9
+9 7 6 2 1
+1 3 2 4 5
+8 6 4 4 1
+1 3 6 7 9`,
+    expected: "4"
+	}];
 
 	const [p1testsNormalized, p2testsNormalized] = normalizeTestCases(part1tests, part2tests);
 
