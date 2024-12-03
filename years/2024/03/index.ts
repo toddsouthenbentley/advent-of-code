@@ -13,17 +13,39 @@ const DAY = 3;
 // data path    : /Users/todd/projects/advent-of-code/years/2024/03/data.txt
 // problem url  : https://adventofcode.com/2024/day/3
 
+function computeSum(input: string, part1 = true) {
+  let sum = 0;
+  let enabled = true;
+  const matches = input.matchAll(/do\(\)|don\'t\(\)|mul\((\d+),(\d+)\)/g);
+  for (const match of matches) {
+    if (!part1) {
+      if (match[0].startsWith("don't")) enabled = false;
+      if (match[0].startsWith("do(")) enabled = true;
+    }
+    if (enabled && match[0].startsWith("mul")) {
+      sum += Number(match[1]) * Number(match[2]);
+    }
+  }
+  return sum;
+}
+
 async function p2024day3_part1(input: string, ...params: any[]) {
-	return "Not implemented";
+  return computeSum(input).toString();
 }
 
 async function p2024day3_part2(input: string, ...params: any[]) {
-	return "Not implemented";
+  return computeSum(input, false).toString();
 }
 
 async function run() {
-	const part1tests: TestCase[] = [];
-	const part2tests: TestCase[] = [];
+	const part1tests: TestCase[] = [{
+		input: "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))",
+		expected: "161"
+	}];
+	const part2tests: TestCase[] = [{
+    input: "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))",
+    expected: "48"
+  }];
 
 	const [p1testsNormalized, p2testsNormalized] = normalizeTestCases(part1tests, part2tests);
 
