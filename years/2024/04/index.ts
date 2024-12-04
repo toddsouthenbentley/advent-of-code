@@ -18,9 +18,7 @@ const DAY = 4;
 async function p2024day4_part1(input: string, ...params: any[]) {
 	let count = 0;
 	const searchString = "XMAS";
-	const grid = new Grid({serialized: input});
-  const cells = grid.getCells(searchString[0]);
-  for (const cell of cells) {
+  for (const cell of new Grid({serialized: input}).getCells(searchString[0])) {
     for (const dir of [Dir.N, Dir.NE, Dir.E, Dir.SE, Dir.S, Dir.SW, Dir.W, Dir.NW]) {
       let currCell: Cell | undefined = cell;
       for (let i = 0; i < searchString.length; i++, currCell = currCell?.repeatMovements([dir])) {
@@ -34,9 +32,7 @@ async function p2024day4_part1(input: string, ...params: any[]) {
 
 async function p2024day4_part2(input: string, ...params: any[]) {
 	let count = 0;
-	const grid = new Grid({serialized: input});
-  const cells = grid.getCells("A");
-  for (const cell of cells) {
+  for (const cell of new Grid({serialized: input}).getCells("A")) {
     const ne = cell.repeatMovements([Dir.NE]);
     const sw = cell.repeatMovements([Dir.SW]);
     const se = cell.repeatMovements([Dir.SE]);
