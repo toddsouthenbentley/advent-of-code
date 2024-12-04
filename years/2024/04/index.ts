@@ -5,6 +5,8 @@ import chalk from "chalk";
 import { log, logSolution, trace } from "../../../util/log";
 import { performance } from "perf_hooks";
 import { normalizeTestCases } from "../../../util/test";
+import { serialize } from "v8";
+import { Cell, Dir, Grid } from "../../../util/grid";
 
 const YEAR = 2024;
 const DAY = 4;
@@ -14,16 +16,70 @@ const DAY = 4;
 // problem url  : https://adventofcode.com/2024/day/4
 
 async function p2024day4_part1(input: string, ...params: any[]) {
-	return "Not implemented";
+	let count = 0;
+	const searchString = "XMAS";
+	const grid = new Grid({serialized: input});
+  const cells = grid.getCells(searchString[0]);
+  for (const cell of cells) {
+    for (const dir of [Dir.N, Dir.NE, Dir.E, Dir.SE, Dir.S, Dir.SW, Dir.W, Dir.NW]) {
+      let currCell: Cell | undefined = cell;
+      for (let i = 0; i < searchString.length; i++, currCell = currCell?.repeatMovements([dir])) {
+        if (currCell?.value !== searchString[i]) break;
+        if (i === searchString.length - 1) count++;
+      }
+    }
+  }
+	return count.toString();
 }
 
 async function p2024day4_part2(input: string, ...params: any[]) {
-	return "Not implemented";
+	let count = 0;
+	const grid = new Grid({serialized: input});
+  const cells = grid.getCells("A");
+  for (const cell of cells) {
+    const ne = cell.repeatMovements([Dir.NE]);
+    const sw = cell.repeatMovements([Dir.SW]);
+    const se = cell.repeatMovements([Dir.SE]);
+    const nw = cell.repeatMovements([Dir.NW]);
+
+    if (!ne || !se || !nw || !sw) continue;
+    if (
+      ((ne.value === "M" && sw.value === "S") || (ne.value === "S" && sw.value === "M")) &&
+      ((nw.value === "M" && se.value === "S") || (nw.value === "S" && se.value === "M"))
+    ) {
+      count++;
+    }
+  }
+	return count.toString();
 }
 
 async function run() {
-	const part1tests: TestCase[] = [];
-	const part2tests: TestCase[] = [];
+	const part1tests: TestCase[] = [{
+		input: `MMMSXXMASM
+MSAMXMSMSA
+AMXSXMAAMM
+MSAMASMSMX
+XMASAMXAMM
+XXAMMXXAMA
+SMSMSASXSS
+SAXAMASAAA
+MAMMMXMMMM
+MXMXAXMASX`,
+		expected: "18"
+	}];
+	const part2tests: TestCase[] = [{
+		input: `MMMSXXMASM
+MSAMXMSMSA
+AMXSXMAAMM
+MSAMASMSMX
+XMASAMXAMM
+XXAMMXXAMA
+SMSMSASXSS
+SAXAMASAAA
+MAMMMXMMMM
+MXMXAXMASX`,
+		expected: "9"
+	}];
 
 	const [p1testsNormalized, p2testsNormalized] = normalizeTestCases(part1tests, part2tests);
 
