@@ -14,44 +14,88 @@ const DAY = 6;
 // data path    : /Users/todd/projects/advent-of-code/years/2024/06/data.txt
 // problem url  : https://adventofcode.com/2024/day/6
 
-async function p2024day6_part1(input: string, ...params: any[]) {
-	const grid = new Grid({ serialized: input });
+function traverseGrid(grid: Grid, detectLoops = false) {
 	let currCell: Cell | undefined = grid.getCells("^")[0];
-	currCell.setValue("X");
+	const startPos: GridPos = [...currCell.position];
+	currCell.setValue("|");
 	let direction = Dir.N;
+	const locationToDirections = new Map<string, Set<GridPos>>();
+	const addDirection = (pos: GridPos, dir: GridPos) => {
+		if (!detectLoops) return;
+		const key = pos.toString();
+		if (!locationToDirections.has(key)) locationToDirections.set(key, new Set());
+		locationToDirections.get(key)?.add(dir);
+	};
+
 	while (currCell) {
-    let nextPos: GridPos | undefined = undefined;
+		let nextPos: GridPos | undefined = undefined;
 		const result = currCell.repeatMovements([direction], {
-			count: (candidate) => {
+			count: candidate => {
 				if (!candidate) {
 					// we're done, break out of the loop
 					return false;
 				}
-				if (candidate.value === "#") {
+				if (candidate.value === "#" || candidate.value === "O") {
 					return false;
 				}
-				candidate.setValue("X");
-        nextPos = [...candidate.position];
+				if (detectLoops) {
+					const key = candidate.position.toString();
+					const dirs = locationToDirections.get(key);
+					if (dirs && dirs.has(direction)) {
+						grid.setCell(startPos, "^");
+						throw new Error("Loop detected");
+					}
+				}
+				addDirection(candidate.position, direction);
+				candidate.setValue(direction === Dir.N || direction === Dir.S ? "|" : "-");
+				nextPos = [...candidate.position];
 				return true;
 			},
 		});
-    // result will be undefined when we go off the grid
-    if (result && nextPos){
-      currCell = grid.getCell(nextPos);
-    } else {
-      break;
-    }
-    if (direction === Dir.N) direction = Dir.E;
-    else if (direction === Dir.E) direction = Dir.S;
-    else if (direction === Dir.S) direction = Dir.W;
-    else if (direction === Dir.W) direction = Dir.N;
+		// result will be undefined when we go off the grid
+		if (result && nextPos) {
+			currCell = grid.getCell(nextPos);
+		} else {
+			break;
+		}
+		if (direction === Dir.N) direction = Dir.E;
+		else if (direction === Dir.E) direction = Dir.S;
+		else if (direction === Dir.S) direction = Dir.W;
+		else if (direction === Dir.W) direction = Dir.N;
+		if (currCell) {
+			addDirection(currCell.position, direction);
+			grid.setCell(currCell.position, "+");
+		}
 	}
-	const positions = grid.getCells("X");
-	return positions.length;
+	grid.setCell(startPos, "^");
+	return grid;
+}
+
+async function p2024day6_part1(input: string, ...params: any[]) {
+	const grid = traverseGrid(new Grid({ serialized: input }));
+	// grid.log(false);
+	return grid.getCells(c => ["^", "|", "-", "+"].includes(c.value)).length.toString();
 }
 
 async function p2024day6_part2(input: string, ...params: any[]) {
-	return "Not implemented";
+	const grid = traverseGrid(new Grid({ serialized: input }));
+	const visitedCells = grid.getCells(c => ["^", "|", "-", "+"].includes(c.value));
+	let count = 0;
+	for (const cell of visitedCells) {
+		const testGrid = new Grid({ serialized: input });
+		if (cell.value === "^") continue;
+		testGrid.setCell(cell.position, "O");
+		try {
+			traverseGrid(testGrid, true);
+		} catch (e) {
+			// testGrid.log(false);
+			count++;
+		}
+	}
+	// tried: 2416 too high, 1744 too low
+	// console.log(`count: ${count}`);
+	// return "In progress";
+	return count.toString();
 }
 
 async function run() {
@@ -70,7 +114,21 @@ async function run() {
 			expected: "41",
 		},
 	];
-	const part2tests: TestCase[] = [];
+	const part2tests: TestCase[] = [
+		{
+			input: `....#.....
+.........#
+..........
+..#.......
+.......#..
+..........
+.#..^.....
+........#.
+#.........
+......#...`,
+			expected: "6",
+		},
+	];
 
 	const [p1testsNormalized, p2testsNormalized] = normalizeTestCases(part1tests, part2tests);
 
