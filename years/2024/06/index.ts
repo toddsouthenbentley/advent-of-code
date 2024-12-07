@@ -53,12 +53,14 @@ function traverseGrid(grid: Grid, detectLoops = false) {
 				return true;
 			},
 		});
+
 		// result will be undefined when we go off the grid
 		if (result && nextPos) {
 			currCell = grid.getCell(nextPos);
 		} else {
 			break;
 		}
+
 		if (direction === Dir.N) direction = Dir.E;
 		else if (direction === Dir.E) direction = Dir.S;
 		else if (direction === Dir.S) direction = Dir.W;
@@ -83,11 +85,10 @@ async function p2024day6_part2(input: string, ...params: any[]) {
   const grid = new Grid({ serialized: input });
   const baseGrid = grid.copyGrid();
 	traverseGrid(grid);
-	const visitedCells = grid.getCells(c => ["^", "|", "-", "+"].includes(c.value));
+	const visitedCells = grid.getCells(c => ["|", "-", "+"].includes(c.value));
 	let count = 0;
 	for (const cell of visitedCells) {
 		const testGrid = baseGrid.copyGrid();
-		if (cell.value === "^") continue;
 		testGrid.setCell(cell.position, "O");
 		try {
 			traverseGrid(testGrid, true);
