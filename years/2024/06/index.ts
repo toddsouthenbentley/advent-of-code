@@ -26,6 +26,7 @@ function traverseGrid(grid: Grid, detectLoops = false) {
 		if (!locationToDirections.has(key)) locationToDirections.set(key, new Set());
 		locationToDirections.get(key)?.add(dir);
 	};
+  addDirection(startPos, direction);
 
 	while (currCell) {
 		let nextPos: GridPos | undefined = undefined;
@@ -62,6 +63,7 @@ function traverseGrid(grid: Grid, detectLoops = false) {
 		else if (direction === Dir.E) direction = Dir.S;
 		else if (direction === Dir.S) direction = Dir.W;
 		else if (direction === Dir.W) direction = Dir.N;
+
 		if (currCell) {
 			addDirection(currCell.position, direction);
 			grid.setCell(currCell.position, "+");
@@ -78,11 +80,13 @@ async function p2024day6_part1(input: string, ...params: any[]) {
 }
 
 async function p2024day6_part2(input: string, ...params: any[]) {
-	const grid = traverseGrid(new Grid({ serialized: input }));
+  const grid = new Grid({ serialized: input });
+  const baseGrid = grid.copyGrid();
+	traverseGrid(grid);
 	const visitedCells = grid.getCells(c => ["^", "|", "-", "+"].includes(c.value));
 	let count = 0;
 	for (const cell of visitedCells) {
-		const testGrid = new Grid({ serialized: input });
+		const testGrid = baseGrid.copyGrid();
 		if (cell.value === "^") continue;
 		testGrid.setCell(cell.position, "O");
 		try {
