@@ -14,92 +14,66 @@ const DAY = 6;
 // data path    : /Users/todd/projects/advent-of-code/years/2024/06/data.txt
 // problem url  : https://adventofcode.com/2024/day/6
 
-function traverseGrid(grid: Grid, detectLoops = false) {
-	let currCell: Cell | undefined = grid.getCells("^")[0];
-	const startPos: GridPos = [...currCell.position];
-	currCell.setValue("|");
+function traverseGrid(grid: Grid) {
+	const locations = new Set<string>();
+	let currCell: Cell | undefined = grid.getCell("^");
+	if (!currCell) return locations;
 	let direction = Dir.N;
-	const locationToDirections = new Map<string, Set<GridPos>>();
-	const addDirection = (pos: GridPos, dir: GridPos) => {
-		if (!detectLoops) return;
-		const key = pos.toString();
-		if (!locationToDirections.has(key)) locationToDirections.set(key, new Set());
-		locationToDirections.get(key)?.add(dir);
-	};
-  addDirection(startPos, direction);
 
 	while (currCell) {
-		let nextPos: GridPos | undefined = undefined;
-		const result = currCell.repeatMovements([direction], {
-			count: candidate => {
-				if (!candidate) {
-					// we're done, break out of the loop
-					return false;
-				}
-				if (candidate.value === "#" || candidate.value === "O") {
-					return false;
-				}
-				if (detectLoops) {
-					const key = candidate.position.toString();
-					const dirs = locationToDirections.get(key);
-					if (dirs && dirs.has(direction)) {
-						grid.setCell(startPos, "^");
-						throw new Error("Loop detected");
-					}
-				}
-				addDirection(candidate.position, direction);
-				candidate.setValue(direction === Dir.N || direction === Dir.S ? "|" : "-");
-				nextPos = [...candidate.position];
-				return true;
-			},
-		});
-
-		// result will be undefined when we go off the grid
-		if (result && nextPos) {
-			currCell = grid.getCell(nextPos);
+		locations.add(currCell.position.toString());
+		const nextCell = currCell.repeatMovements([direction]);
+		if (!nextCell) break;
+		if (nextCell.value === "#") {
+			direction = [direction[1], -direction[0]];
 		} else {
-			break;
-		}
-
-		if (direction === Dir.N) direction = Dir.E;
-		else if (direction === Dir.E) direction = Dir.S;
-		else if (direction === Dir.S) direction = Dir.W;
-		else if (direction === Dir.W) direction = Dir.N;
-
-		if (currCell) {
-			addDirection(currCell.position, direction);
-			grid.setCell(currCell.position, "+");
+			currCell = nextCell;
 		}
 	}
-	grid.setCell(startPos, "^");
-	return grid;
+	return locations;
 }
 
 async function p2024day6_part1(input: string, ...params: any[]) {
-	const grid = traverseGrid(new Grid({ serialized: input }));
-	// grid.log(false);
-	return grid.getCells(c => ["^", "|", "-", "+"].includes(c.value)).length.toString();
+	const grid = new Grid({ serialized: input });
+	const locations = traverseGrid(grid);
+	return locations.size.toString();
+}
+
+function hasLoops(grid: Grid) {
+	const locations = new Set<string>();
+	let currCell: Cell | undefined = grid.getCell("^");
+	if (!currCell) return locations;
+	let direction = Dir.N;
+
+	while (currCell) {
+		locations.add([...currCell.position, ...direction].toString());
+		const nextCell: Cell | undefined = currCell.repeatMovements([direction]);
+		if (!nextCell) break;
+		if (nextCell.value === "#") {
+			direction = [direction[1], -direction[0]];
+		} else {
+			currCell = nextCell;
+		}
+		if (locations.has([...currCell.position, ...direction].toString())) {
+			return true;
+		}
+	}
+	return false;
 }
 
 async function p2024day6_part2(input: string, ...params: any[]) {
-  const grid = new Grid({ serialized: input });
-  const baseGrid = grid.copyGrid();
-	traverseGrid(grid);
-	const visitedCells = grid.getCells(c => ["|", "-", "+"].includes(c.value));
+	const grid = new Grid({ serialized: input });
+	const locations = traverseGrid(grid);
+	const gridPositions: GridPos[] = Array.from(locations).map((l: string) => l.split(",").map(Number) as GridPos);
+	const visitedCells = gridPositions.map(l => grid.getCell(l)).filter(c => c);
 	let count = 0;
+
 	for (const cell of visitedCells) {
-		const testGrid = baseGrid.copyGrid();
-		testGrid.setCell(cell.position, "O");
-		try {
-			traverseGrid(testGrid, true);
-		} catch (e) {
-			// testGrid.log(false);
-			count++;
-		}
+		if (!cell || cell.value !== ".") continue;
+		grid.setCell(cell.position, "#");
+		if (hasLoops(grid)) count++;
+		grid.setCell(cell.position, ".");
 	}
-	// tried: 2416 too high, 1744 too low
-	// console.log(`count: ${count}`);
-	// return "In progress";
 	return count.toString();
 }
 
