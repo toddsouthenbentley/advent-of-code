@@ -14,7 +14,7 @@ const DAY = 8;
 // data path    : /Users/todd/projects/advent-of-code/years/2024/08/data.txt
 // problem url  : https://adventofcode.com/2024/day/8
 
-async function p2024day8_part1(input: string, ...params: any[]) {
+function determineLocations(input: string, part1: boolean) {
   const locations = new Set<string>();
   // set of unique chars in input
   const chars = new Set(input.split(""));
@@ -29,39 +29,31 @@ async function p2024day8_part1(input: string, ...params: any[]) {
         if (ii === jj) continue;
         const [cell1, cell2] = [cells[ii], cells[jj]];
         const delta: GridPos = [cell1.position[0] - cell2.position[0], cell1.position[1] - cell2.position[1]];
-        const candidate = cell1.repeatMovements([delta]);
-        if (candidate) {
-          locations.add(candidate.toString());
+        if (part1) {
+          const candidate = cell1.repeatMovements([delta]);
+          if (candidate) {
+            locations.add(candidate.toString());
+          }
+        } else {
+          let currCell: Cell | undefined = cell1;
+          while (currCell) {
+            locations.add(currCell.toString());
+            currCell = currCell.repeatMovements([delta]);
+          }
         }
       }
     }
   }
+  return locations;
+}
+
+async function p2024day8_part1(input: string, ...params: any[]) {
+  const locations = determineLocations(input, true);
   return locations.size;
 }
 
 async function p2024day8_part2(input: string, ...params: any[]) {
-  const locations = new Set<string>();
-  // set of unique chars in input
-  const chars = new Set(input.split(""));
-  chars.delete(".");
-  chars.delete("\n");
-
-  const grid = new Grid({ serialized: input });
-  for (const currChar of chars) {
-    const cells = grid.getCells(currChar);
-    for (let ii = 0; ii < cells.length; ii++) {
-      for (let jj = 0; jj < cells.length; jj++) {
-        if (ii === jj) continue;
-        const [cell1, cell2] = [cells[ii], cells[jj]];
-        const delta: GridPos = [cell1.position[0] - cell2.position[0], cell1.position[1] - cell2.position[1]];
-        let currCell: Cell | undefined = cell1;
-        while (currCell) {
-          locations.add(currCell.toString());
-          currCell = currCell.repeatMovements([delta]);
-        }
-      }
-    }
-  }
+  const locations = determineLocations(input, false);
   return locations.size;
 }
 
