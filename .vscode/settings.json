@@ -1,4 +1,4 @@
 {
-    "editor.insertSpaces": false,
-    "git.branchProtectionPrompt": "alwaysCommit"
+    "git.branchProtectionPrompt": "alwaysCommit",
+    "editor.formatOnSave": true
 }
