@@ -25,7 +25,7 @@ function loadData(input: string) {
 }
 
 function getPossibilties(numbers: number[], operators: string[]) {
-  const result = Array<Array<number|string>>();
+  const result = Array<Array<number | string>>();
   if (numbers.length === 2) {
     operators.forEach(op => {
       result.push([numbers[0], op, numbers[1]]);
@@ -41,7 +41,7 @@ function getPossibilties(numbers: number[], operators: string[]) {
   return result;
 }
 
-function hasSuccessfulComputation({ result, inputs }: { result: number, inputs: number[] }, operators = ["*", "+"]) {
+function hasSuccessfulComputation({ result, inputs }: { result: number; inputs: number[] }, operators = ["*", "+"]) {
   const possibilities = getPossibilties(inputs, operators);
   for (const poss of possibilities) {
     let currResult: number = poss.shift() as number;
@@ -70,26 +70,24 @@ async function p2024day7_part1(input: string, ...params: any[]) {
   const data = loadData(input);
   let result = 0;
   for (const line of data) {
-    if (hasSuccessfulComputation(line))
-      result += line.result;
+    if (hasSuccessfulComputation(line)) result += line.result;
   }
-	return result.toString();
+  return result.toString();
 }
 
 async function p2024day7_part2(input: string, ...params: any[]) {
   const data = loadData(input);
   let result = 0;
   for (const line of data) {
-    if (hasSuccessfulComputation(line, ["||", "+", "*"]))
-      result += line.result;
+    if (hasSuccessfulComputation(line, ["||", "+", "*"])) result += line.result;
   }
-	return result.toString();
+  return result.toString();
 }
 
 async function run() {
-	const part1tests: TestCase[] = [
-		{
-			input: `190: 10 19
+  const part1tests: TestCase[] = [
+    {
+      input: `190: 10 19
 3267: 81 40 27
 83: 17 5
 156: 15 6
@@ -98,12 +96,12 @@ async function run() {
 192: 17 8 14
 21037: 9 7 18 13
 292: 11 6 16 20`,
-			expected: "3749",
-		},
-	];
-	const part2tests: TestCase[] = [
-		{
-			input: `190: 10 19
+      expected: "3749",
+    },
+  ];
+  const part2tests: TestCase[] = [
+    {
+      input: `190: 10 19
 3267: 81 40 27
 83: 17 5
 156: 15 6
@@ -112,49 +110,49 @@ async function run() {
 192: 17 8 14
 21037: 9 7 18 13
 292: 11 6 16 20`,
-			expected: "11387",
-		},
+      expected: "11387",
+    },
   ];
 
-	const [p1testsNormalized, p2testsNormalized] = normalizeTestCases(part1tests, part2tests);
+  const [p1testsNormalized, p2testsNormalized] = normalizeTestCases(part1tests, part2tests);
 
-	// Run tests
-	test.beginTests();
-	await test.section(async () => {
-		for (const testCase of p1testsNormalized) {
-			test.logTestResult(testCase, String(await p2024day7_part1(testCase.input, ...(testCase.extraArgs || []))));
-		}
-	});
-	await test.section(async () => {
-		for (const testCase of p2testsNormalized) {
-			test.logTestResult(testCase, String(await p2024day7_part2(testCase.input, ...(testCase.extraArgs || []))));
-		}
-	});
-	test.endTests();
+  // Run tests
+  test.beginTests();
+  await test.section(async () => {
+    for (const testCase of p1testsNormalized) {
+      test.logTestResult(testCase, String(await p2024day7_part1(testCase.input, ...(testCase.extraArgs || []))));
+    }
+  });
+  await test.section(async () => {
+    for (const testCase of p2testsNormalized) {
+      test.logTestResult(testCase, String(await p2024day7_part2(testCase.input, ...(testCase.extraArgs || []))));
+    }
+  });
+  test.endTests();
 
-	// Get input and run program while measuring performance
-	const input = await util.getInput(DAY, YEAR);
+  // Get input and run program while measuring performance
+  const input = await util.getInput(DAY, YEAR);
 
-	const part1Before = performance.now();
-	const part1Solution = String(await p2024day7_part1(input));
-	const part1After = performance.now();
+  const part1Before = performance.now();
+  const part1Solution = String(await p2024day7_part1(input));
+  const part1After = performance.now();
 
-	const part2Before = performance.now();
-	const part2Solution = String(await p2024day7_part2(input));
-	const part2After = performance.now();
+  const part2Before = performance.now();
+  const part2Solution = String(await p2024day7_part2(input));
+  const part2After = performance.now();
 
-	logSolution(7, 2024, part1Solution, part2Solution);
+  logSolution(7, 2024, part1Solution, part2Solution);
 
-	log(chalk.gray("--- Performance ---"));
-	log(chalk.gray(`Part 1: ${util.formatTime(part1After - part1Before)}`));
-	log(chalk.gray(`Part 2: ${util.formatTime(part2After - part2Before)}`));
-	log();
+  log(chalk.gray("--- Performance ---"));
+  log(chalk.gray(`Part 1: ${util.formatTime(part1After - part1Before)}`));
+  log(chalk.gray(`Part 2: ${util.formatTime(part2After - part2Before)}`));
+  log();
 }
 
 run()
-	.then(() => {
-		process.exit();
-	})
-	.catch(error => {
-		throw error;
-	});
+  .then(() => {
+    process.exit();
+  })
+  .catch(error => {
+    throw error;
+  });
