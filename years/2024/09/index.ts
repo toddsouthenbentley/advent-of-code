@@ -13,7 +13,7 @@ const DAY = 9;
 // data path    : /Users/todd/projects/advent-of-code/years/2024/09/data.txt
 // problem url  : https://adventofcode.com/2024/day/9
 
-function diskMapToBlocks(input: string) {
+function diskMapToBlocks1(input: string) {
   const nums = input.split("").map(Number);
   // get every odd indexed number into own array
   const fileBlocks = nums.filter((_, idx) => idx % 2 === 0);
@@ -30,7 +30,7 @@ function diskMapToBlocks(input: string) {
   return diskBlocks;
 }
 
-function removeEmptySpaceAtEnd(diskBlocks: number[]) {
+function removeEmptySpaceAtEnd1(diskBlocks: number[]) {
   let lastIdx = diskBlocks.length - 1;
   while (diskBlocks[lastIdx] === -1) {
     lastIdx--;
@@ -38,8 +38,8 @@ function removeEmptySpaceAtEnd(diskBlocks: number[]) {
   return (diskBlocks.length = lastIdx + 1);
 }
 
-function defragDisk(diskBlocks: number[]) {
-  removeEmptySpaceAtEnd(diskBlocks);
+function defragDisk1(diskBlocks: number[]) {
+  removeEmptySpaceAtEnd1(diskBlocks);
   while (true) {
     const freeIdx = diskBlocks.indexOf(-1);
     if (freeIdx === -1) {
@@ -47,11 +47,11 @@ function defragDisk(diskBlocks: number[]) {
     }
     diskBlocks[freeIdx] = diskBlocks[diskBlocks.length - 1];
     diskBlocks.length--;
-    removeEmptySpaceAtEnd(diskBlocks);
+    removeEmptySpaceAtEnd1(diskBlocks);
   }
 }
 
-function computeCheckSum(diskBlocks: number[]) {
+function computeCheckSum1(diskBlocks: number[]) {
   let checkSum = 0;
   for (let ii = 0; ii < diskBlocks.length; ii++) {
     if (diskBlocks[ii] > 0) {
@@ -62,9 +62,9 @@ function computeCheckSum(diskBlocks: number[]) {
 }
 
 async function p2024day9_part1(input: string, ...params: any[]) {
-  const blocks = diskMapToBlocks(input);
-  defragDisk(blocks);
-  const checkSum = computeCheckSum(blocks);
+  const blocks = diskMapToBlocks1(input);
+  defragDisk1(blocks);
+  const checkSum = computeCheckSum1(blocks);
   return checkSum.toString();
 }
 
