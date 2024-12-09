@@ -32,13 +32,11 @@ class EmptySpace extends DiskFile {
 
 function diskMapToBlocks(input: string) {
   const nums = input.split("").map(Number);
-  const fileBlocks = nums.filter((_, idx) => idx % 2 === 0);
-  const freeBlocks = nums.filter((_, idx) => idx % 2 === 1);
   const diskBlocks = new Array<DiskFile>();
-  for (let fileIdx = 0; fileIdx < fileBlocks.length; fileIdx++) {
-    diskBlocks.push(new DiskFile(fileIdx, fileBlocks[fileIdx]));
-    if (fileIdx < freeBlocks.length && freeBlocks[fileIdx]) {
-      diskBlocks.push(new EmptySpace(freeBlocks[fileIdx]));
+  for (let ii = 0; ii < nums.length; ii += 2) {
+    diskBlocks.push(new DiskFile(ii / 2, nums[ii]));
+    if (ii + 1 < nums.length && nums[ii + 1]) {
+      diskBlocks.push(new EmptySpace(nums[ii + 1]));
     }
   }
   return diskBlocks;
