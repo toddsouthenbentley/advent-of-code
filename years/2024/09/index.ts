@@ -54,7 +54,9 @@ function defragDisk(diskBlocks: number[]) {
 function computeCheckSum(diskBlocks: number[]) {
   let checkSum = 0;
   for (let ii = 0; ii < diskBlocks.length; ii++) {
-    checkSum += diskBlocks[ii] * ii;
+    if (diskBlocks[ii] > 0) {
+      checkSum += diskBlocks[ii] * ii;
+    }
   }
   return checkSum;
 }
@@ -66,8 +68,71 @@ async function p2024day9_part1(input: string, ...params: any[]) {
   return checkSum.toString();
 }
 
+class DiskFile {
+  public id = 0;
+  public blocks = 0;
+  public processed = false;
+
+  constructor(id: number, blocks: number) {
+    this.id = id;
+    this.blocks = blocks;
+  }
+}
+
+class EmptySpace extends DiskFile {
+  constructor(blocks: number) {
+    super(-1, blocks);
+  }
+}
+
+function diskMapToBlocks2(input: string) {
+  const nums = input.split("").map(Number);
+  const fileBlocks = nums.filter((_, idx) => idx % 2 === 0);
+  const freeBlocks = nums.filter((_, idx) => idx % 2 === 1);
+  const diskBlocks = new Array<DiskFile>();
+  for (let fileIdx = 0; fileIdx < fileBlocks.length; fileIdx++) {
+    diskBlocks.push(new DiskFile(fileIdx, fileBlocks[fileIdx]));
+    if (fileIdx < freeBlocks.length && freeBlocks[fileIdx]) {
+      diskBlocks.push(new EmptySpace(freeBlocks[fileIdx]));
+    }
+  }
+  return diskBlocks;
+}
+
+function computeCheckSum2(diskBlocks: DiskFile[]) {
+  let checkSum = 0;
+  let blockIdx = 0;
+  for (const diskBlock of diskBlocks) {
+    for (let ii = 0; ii < diskBlock.blocks; ii++) {
+      if (diskBlock.id > 0) {
+        checkSum += diskBlock.id * (blockIdx + ii);
+      }
+    }
+    blockIdx += diskBlock.blocks;
+  }
+  return checkSum;
+}
+
+function defragDisk2(diskBlocks: DiskFile[]) {
+  while (true) {
+    const candidateIdx = diskBlocks.findLastIndex(f => !f.processed && f.id > -1);
+    if (candidateIdx === -1) break;
+    const candidate = diskBlocks[candidateIdx];
+    candidate.processed = true;
+    const emptySpaceIdx = diskBlocks.findIndex(f => f.id === -1 && f.blocks >= candidate.blocks);
+    if (emptySpaceIdx === -1 || emptySpaceIdx >= candidateIdx) continue;
+    const emptySpace = diskBlocks[emptySpaceIdx];
+    emptySpace.blocks -= candidate.blocks;
+    diskBlocks.splice(emptySpaceIdx, emptySpace.blocks ? 0 : 1, candidate);
+    diskBlocks.splice(candidateIdx + (emptySpace.blocks ? 1 : 0), 1, new EmptySpace(candidate.blocks));
+  }
+}
+
 async function p2024day9_part2(input: string, ...params: any[]) {
-  return "Not implemented";
+  const blocks = diskMapToBlocks2(input);
+  defragDisk2(blocks);
+  const checkSum = computeCheckSum2(blocks);
+  return checkSum.toString();
 }
 
 async function run() {
@@ -77,7 +142,12 @@ async function run() {
       expected: "1928",
     },
   ];
-  const part2tests: TestCase[] = [];
+  const part2tests: TestCase[] = [
+    {
+      input: `2333133121414131402`,
+      expected: "2858",
+    },
+  ];
 
   const [p1testsNormalized, p2testsNormalized] = normalizeTestCases(part1tests, part2tests);
 
