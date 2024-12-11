@@ -14,29 +14,6 @@ const DAY = 10;
 // data path    : /Users/todd/projects/advent-of-code/years/2024/10/data.txt
 // problem url  : https://adventofcode.com/2024/day/10
 
-// const locationToPaths = new Map<string, number>();
-// function traversePath(start: Cell) {
-//   if (start.value === "9") {
-//     locationToPaths.set(start.position.toString(), 1);
-//     // we're done
-//     return 1;
-//   }
-
-//   const nextVal = (Number(start.value) + 1).toString();
-//   const nexts = start.neighbors(false, false, true, true).filter(c => c.value === nextVal);
-//   let nextNumPaths = 0;
-//   for (const next of nexts) {
-//     const numPaths = locationToPaths.get(next.toString());
-//     if (numPaths === undefined) {
-//       nextNumPaths += traversePath(next);
-//     } else {
-//       nextNumPaths += numPaths;
-//     }
-//   }
-//   locationToPaths.set(start.position.toString(), nextNumPaths);
-//   return nextNumPaths;
-// }
-
 async function p2024day10_part1(input: string, ...params: any[]) {
   const grid = new Grid({ serialized: input });
   const starts = grid.getCells("0");
@@ -97,8 +74,7 @@ async function p2024day10_part2(input: string, ...params: any[]) {
 
   let totalPaths = 0;
   for (const start of starts) {
-    const numPaths = traversePath(start);
-    totalPaths += numPaths;
+    totalPaths += traversePath(start);
   }
   return totalPaths.toString();
 }
