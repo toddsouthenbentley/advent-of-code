@@ -39,14 +39,13 @@ async function p2024day6_part1(input: string, ...params: any[]) {
   return locations.size.toString();
 }
 
-function hasLoops(grid: Grid) {
+function hasLoops(currCell: Cell) {
   const locations = new Set<string>();
-  let currCell: Cell | undefined = grid.getCell("^");
   if (!currCell) return locations;
   let direction = Dir.N;
-
+  const keyVal = (pos: GridPos, dir: GridPos) => `${pos[0]}, ${pos[1]}, ${dir[0]}, ${dir[1]}`;
   while (currCell) {
-    locations.add([...currCell.position, ...direction].toString());
+    locations.add(keyVal(currCell.position, direction));
     const nextCell: Cell | undefined = currCell.repeatMovements([direction]);
     if (!nextCell) break;
     if (nextCell.value === "#") {
@@ -54,7 +53,7 @@ function hasLoops(grid: Grid) {
     } else {
       currCell = nextCell;
     }
-    if (locations.has([...currCell.position, ...direction].toString())) {
+    if (locations.has(keyVal(currCell.position, direction))) {
       return true;
     }
   }
@@ -68,10 +67,11 @@ async function p2024day6_part2(input: string, ...params: any[]) {
   const visitedCells = gridPositions.map(l => grid.getCell(l)).filter(c => c);
   let count = 0;
 
+  const startCell = grid.getCell("^");
   for (const cell of visitedCells) {
     if (!cell || cell.value !== ".") continue;
     grid.setCell(cell.position, "#");
-    if (hasLoops(grid)) count++;
+    if (hasLoops(startCell!)) count++;
     grid.setCell(cell.position, ".");
   }
   return count.toString();
