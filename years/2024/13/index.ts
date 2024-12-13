@@ -19,7 +19,6 @@ function solve(curr: number[], offset = 0) {
   py += offset;
   const b = (py * ax - px * ay) / (ax * by - ay * bx);
   const a = (px - bx * b) / ax;
-  if (offset === 0 && (a > 100 || b > 100)) return 0;
   if (a % 1 !== 0 || b % 1 !== 0) return 0;
   return a * 3 + b;
 }
