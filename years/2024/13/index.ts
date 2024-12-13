@@ -13,12 +13,12 @@ const DAY = 13;
 // data path    : /Users/todd/projects/advent-of-code/years/2024/13/data.txt
 // problem url  : https://adventofcode.com/2024/day/13
 
-function solves(numB: number, curr: number[]) {
+function solve(curr: number[]) {
   const [ax, ay, bx, by, px, py] = curr;
-  const [diffX, diffY] = [px - bx * numB, py - by * numB];
-  if (diffX < 0 || diffY < 0) return false;
-  if (diffX % ax !== 0 || diffY % ay !== 0) return false;
-  return diffX / ax;
+  const b = (py * ax - px * ay) / (ax * by - ay * bx);
+  const a = (px - bx * b) / ax;
+  if (a > 100 || b > 100 || a % 1 !== 0 || b % 1 !== 0) return 0;
+  return a * 3 + b;
 }
 
 async function p2024day13_part1(input: string, ...params: any[]) {
@@ -27,20 +27,7 @@ async function p2024day13_part1(input: string, ...params: any[]) {
   for (const group of groups) {
     const curr = group.match(/([0-9])+/g)?.map(Number);
     if (curr?.length !== 6) throw new Error("Invalid group");
-
-    let minCost = -1;
-    for (let numB = 0; numB <= 100; numB++) {
-      const numA = solves(numB, curr);
-      if (numA !== false) {
-        const cost = numA * 3 + numB;
-        if (minCost === -1 || cost < minCost) {
-          minCost = cost;
-        }
-      }
-    }
-    if (minCost !== -1) {
-      total += minCost;
-    }
+    total += solve(curr);
   }
   return total.toString();
 }
