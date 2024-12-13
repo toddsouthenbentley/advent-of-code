@@ -13,28 +13,35 @@ const DAY = 13;
 // data path    : /Users/todd/projects/advent-of-code/years/2024/13/data.txt
 // problem url  : https://adventofcode.com/2024/day/13
 
-function solve(curr: number[]) {
-  const [ax, ay, bx, by, px, py] = curr;
+function solve(curr: number[], offset = 0) {
+  let [ax, ay, bx, by, px, py] = curr;
+  px += offset;
+  py += offset;
   const b = (py * ax - px * ay) / (ax * by - ay * bx);
   const a = (px - bx * b) / ax;
-  if (a > 100 || b > 100 || a % 1 !== 0 || b % 1 !== 0) return 0;
+  if (offset === 0 && (a > 100 || b > 100)) return 0;
+  if (a % 1 !== 0 || b % 1 !== 0) return 0;
   return a * 3 + b;
 }
 
+function parseMachines(input: string) {
+  return input.split("\n\n").map(g => g.match(/([0-9])+/g)!.map(Number));
+}
+
 async function p2024day13_part1(input: string, ...params: any[]) {
-  const groups = input.split("\n\n");
-  let total = 0;
-  for (const group of groups) {
-    const curr = group.match(/([0-9])+/g)?.map(Number);
-    if (curr?.length !== 6) throw new Error("Invalid group");
-    total += solve(curr);
-  }
+  const total = parseMachines(input).reduce((acc, curr) => acc + solve(curr), 0);
   return total.toString();
 }
 
 async function p2024day13_part2(input: string, ...params: any[]) {
-  return "Not implemented";
+  const total = parseMachines(input).reduce((acc, curr) => acc + solve(curr, 10000000000000), 0);
+  return total.toString();
 }
+
+/*
+Part 1:  39748
+Part 2:  74478585072604
+*/
 
 async function run() {
   const part1tests: TestCase[] = [
@@ -63,7 +70,26 @@ Prize: X=18641, Y=10279`,
       expected: "480",
     },
   ];
-  const part2tests: TestCase[] = [];
+  const part2tests: TestCase[] = [
+    {
+      input: `Button A: X+94, Y+34
+Button B: X+22, Y+67
+Prize: X=8400, Y=5400
+
+Button A: X+26, Y+66
+Button B: X+67, Y+21
+Prize: X=12748, Y=12176
+
+Button A: X+17, Y+86
+Button B: X+84, Y+37
+Prize: X=7870, Y=6450
+
+Button A: X+69, Y+23
+Button B: X+27, Y+71
+Prize: X=18641, Y=10279`,
+      expected: "875318608908",
+    },
+  ];
 
   const [p1testsNormalized, p2testsNormalized] = normalizeTestCases(part1tests, part2tests);
 
