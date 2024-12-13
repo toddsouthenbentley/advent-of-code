@@ -13,16 +13,12 @@ const DAY = 13;
 // data path    : /Users/todd/projects/advent-of-code/years/2024/13/data.txt
 // problem url  : https://adventofcode.com/2024/day/13
 
-function solves(
-  numB: number,
-  btnA: { x: number; y: number },
-  btnB: { x: number; y: number },
-  prize: { x: number; y: number }
-) {
-  const diffs = { x: prize.x - btnB.x * numB, y: prize.y - btnB.y * numB };
-  if (diffs.x < 0 || diffs.y < 0) return false;
-  if (diffs.x % btnA.x !== 0 || diffs.y % btnA.y !== 0) return false;
-  return diffs.x / btnA.x;
+function solves(numB: number, curr: number[]) {
+  const [ax, ay, bx, by, px, py] = curr;
+  const [diffX, diffY] = [px - bx * numB, py - by * numB];
+  if (diffX < 0 || diffY < 0) return false;
+  if (diffX % ax !== 0 || diffY % ay !== 0) return false;
+  return diffX / ax;
 }
 
 async function p2024day13_part1(input: string, ...params: any[]) {
@@ -31,18 +27,13 @@ async function p2024day13_part1(input: string, ...params: any[]) {
   for (const group of groups) {
     const curr = group.match(/([0-9])+/g)?.map(Number);
     if (curr?.length !== 6) throw new Error("Invalid group");
-    const btnA = { x: curr[0], y: curr[1] };
-    const btnB = { x: curr[2], y: curr[3] };
-    const prize = { x: curr[4], y: curr[5] };
 
     let minCost = -1;
-    for (let numB = 100; numB >= 0; numB--) {
-      const numA = solves(numB, btnA, btnB, prize);
+    for (let numB = 0; numB <= 100; numB++) {
+      const numA = solves(numB, curr);
       if (numA !== false) {
         const cost = numA * 3 + numB;
-        if (minCost === -1) {
-          minCost = cost;
-        } else if (cost < minCost) {
+        if (minCost === -1 || cost < minCost) {
           minCost = cost;
         }
       }
