@@ -13,57 +13,119 @@ const DAY = 13;
 // data path    : /Users/todd/projects/advent-of-code/years/2024/13/data.txt
 // problem url  : https://adventofcode.com/2024/day/13
 
+function solves(
+  numB: number,
+  btnA: { x: number; y: number },
+  btnB: { x: number; y: number },
+  prize: { x: number; y: number }
+) {
+  const diffs = { x: prize.x - btnB.x * numB, y: prize.y - btnB.y * numB };
+  if (diffs.x < 0 || diffs.y < 0) return false;
+  if (diffs.x % btnA.x !== 0 || diffs.y % btnA.y !== 0) return false;
+  return diffs.x / btnA.x;
+}
+
 async function p2024day13_part1(input: string, ...params: any[]) {
-	return "Not implemented";
+  const groups = input.split("\n\n");
+  let total = 0;
+  for (const group of groups) {
+    const curr = group.match(/([0-9])+/g)?.map(Number);
+    if (curr?.length !== 6) throw new Error("Invalid group");
+    const btnA = { x: curr[0], y: curr[1] };
+    const btnB = { x: curr[2], y: curr[3] };
+    const prize = { x: curr[4], y: curr[5] };
+
+    let minCost = -1;
+    for (let numB = 100; numB >= 0; numB--) {
+      const numA = solves(numB, btnA, btnB, prize);
+      if (numA !== false) {
+        const cost = numA * 3 + numB;
+        if (minCost === -1) {
+          minCost = cost;
+        } else if (cost < minCost) {
+          minCost = cost;
+        }
+      }
+    }
+    if (minCost !== -1) {
+      total += minCost;
+    }
+  }
+  return total.toString();
 }
 
 async function p2024day13_part2(input: string, ...params: any[]) {
-	return "Not implemented";
+  return "Not implemented";
 }
 
 async function run() {
-	const part1tests: TestCase[] = [];
-	const part2tests: TestCase[] = [];
+  const part1tests: TestCase[] = [
+    {
+      input: `Button A: X+94, Y+34
+Button B: X+22, Y+67
+Prize: X=8400, Y=5400`,
+      expected: "280",
+    },
+    {
+      input: `Button A: X+94, Y+34
+Button B: X+22, Y+67
+Prize: X=8400, Y=5400
 
-	const [p1testsNormalized, p2testsNormalized] = normalizeTestCases(part1tests, part2tests);
+Button A: X+26, Y+66
+Button B: X+67, Y+21
+Prize: X=12748, Y=12176
 
-	// Run tests
-	test.beginTests();
-	await test.section(async () => {
-		for (const testCase of p1testsNormalized) {
-			test.logTestResult(testCase, String(await p2024day13_part1(testCase.input, ...(testCase.extraArgs || []))));
-		}
-	});
-	await test.section(async () => {
-		for (const testCase of p2testsNormalized) {
-			test.logTestResult(testCase, String(await p2024day13_part2(testCase.input, ...(testCase.extraArgs || []))));
-		}
-	});
-	test.endTests();
+Button A: X+17, Y+86
+Button B: X+84, Y+37
+Prize: X=7870, Y=6450
 
-	// Get input and run program while measuring performance
-	const input = await util.getInput(DAY, YEAR);
+Button A: X+69, Y+23
+Button B: X+27, Y+71
+Prize: X=18641, Y=10279`,
+      expected: "480",
+    },
+  ];
+  const part2tests: TestCase[] = [];
 
-	const part1Before = performance.now();
-	const part1Solution = String(await p2024day13_part1(input));
-	const part1After = performance.now();
+  const [p1testsNormalized, p2testsNormalized] = normalizeTestCases(part1tests, part2tests);
 
-	const part2Before = performance.now()
-	const part2Solution = String(await p2024day13_part2(input));
-	const part2After = performance.now();
+  // Run tests
+  test.beginTests();
+  await test.section(async () => {
+    for (const testCase of p1testsNormalized) {
+      test.logTestResult(testCase, String(await p2024day13_part1(testCase.input, ...(testCase.extraArgs || []))));
+    }
+  });
+  await test.section(async () => {
+    for (const testCase of p2testsNormalized) {
+      test.logTestResult(testCase, String(await p2024day13_part2(testCase.input, ...(testCase.extraArgs || []))));
+    }
+  });
+  test.endTests();
 
-	logSolution(13, 2024, part1Solution, part2Solution);
+  // Get input and run program while measuring performance
+  const input = await util.getInput(DAY, YEAR);
 
-	log(chalk.gray("--- Performance ---"));
-	log(chalk.gray(`Part 1: ${util.formatTime(part1After - part1Before)}`));
-	log(chalk.gray(`Part 2: ${util.formatTime(part2After - part2Before)}`));
-	log();
+  const part1Before = performance.now();
+  const part1Solution = String(await p2024day13_part1(input));
+  const part1After = performance.now();
+
+  const part2Before = performance.now();
+  const part2Solution = String(await p2024day13_part2(input));
+  const part2After = performance.now();
+
+  logSolution(13, 2024, part1Solution, part2Solution);
+
+  log(chalk.gray("--- Performance ---"));
+  log(chalk.gray(`Part 1: ${util.formatTime(part1After - part1Before)}`));
+  log(chalk.gray(`Part 2: ${util.formatTime(part2After - part2Before)}`));
+  log();
 }
 
 run()
-	.then(() => {
-		process.exit();
-	})
-	.catch(error => {
-		throw error;
-	});
+  .then(() => {
+    process.exit();
+  })
+  .catch(error => {
+    throw error;
+  });
