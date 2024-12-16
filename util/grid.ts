@@ -150,7 +150,7 @@ export type GridPos = [row: number, col: number];
  * - Function: If a cell is returned, use that cell as the next
  *             position. Otherwise acts like "none".
  */
-export type MoveOption = "wrap" | "stay" | "expand" | "none" | ((cell: Cell | undefined, origin: Cell) => GridPos);
+export type MoveOption = "wrap" | "stay" | "expand" | "none" | ((cell: Cell | undefined, origin: Cell) => GridPos | undefined);
 
 /**
  * Options for moving from cell-to-cell
