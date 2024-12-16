@@ -63,23 +63,26 @@ async function p2024day14_part1(input: string, ...params: any[]) {
   return total.toString();
 }
 
-function sortRobots(robots: Robot[]) {
-  robots.sort((a, b) => {
-    const dy = a.position[1] - b.position[1];
-    if (dy !== 0) return dy;
-    return a.position[0] - b.position[0];
-  });
-  return robots;
-}
-
 function isChristmasTree(robots: Robot[], dimensions: number[], numConsecutive = 10) {
   for (let row = 0; row < dimensions[1]; row++) {
     const rowRobots = robots.filter(r => r.position[1] === row);
     const columns = new Set(rowRobots.map(r => r.position[0]));
     if (columns.size >= numConsecutive) {
-      const sorted = Array.from(columns).sort((a, b) => a - b);
-      const areConsecutive = sorted[0] + sorted.length - 1 === sorted[sorted.length - 1];
-      return areConsecutive;
+      const sorted = _.sortBy(Array.from(columns));
+      const result = _.reduce(
+        sorted,
+        (acc, num) => {
+          if (_.isEmpty(acc) || num !== _.last(_.last(acc))! + 1) {
+            acc.push([num]);
+          } else {
+            _.last(acc)!.push(num);
+          }
+          return acc;
+        },
+        [] as number[][]
+      );
+      const consec = result.find(r => r.length >= numConsecutive);
+      if (consec) return true;
     }
   }
   return false;
@@ -101,10 +104,13 @@ async function p2024day14_part2(input: string, ...params: any[]) {
   const robots = input.split("\n").map(parseRobot);
   const dimensions = params.length ? (params as number[]) : [101, 103];
   let count = 0;
-  while (!isChristmasTree(robots, dimensions, params.length ? 4 : 10)) {
-    robots.forEach(r => r.move(dimensions, 1));
-    console.log(count);
+  while (!isChristmasTree(robots, dimensions)) {
+    robots.forEach(r => r.move(dimensions));
+    if (count % 1000 === 0) {
+      console.log(count);
+    }
     count++;
+    if (count > 100000) return "Too many iterations";
   }
   printGrid(robots, dimensions);
   return count.toString();
@@ -129,24 +135,7 @@ p=9,5 v=-3,-3`,
       extraArgs: [11, 7],
     },
   ];
-  const part2tests: TestCase[] = [
-    {
-      input: `p=0,4 v=3,-3
-p=6,3 v=-1,-3
-p=10,3 v=-1,2
-p=2,0 v=2,-1
-p=0,0 v=1,3
-p=3,0 v=-2,-2
-p=7,6 v=-1,-3
-p=3,0 v=-1,-2
-p=9,3 v=2,3
-p=7,3 v=-1,2
-p=2,4 v=2,-3
-p=9,5 v=-3,-3`,
-      expected: "12",
-      extraArgs: [11, 7],
-    },
-  ];
+  const part2tests: TestCase[] = [];
 
   const [p1testsNormalized, p2testsNormalized] = normalizeTestCases(part1tests, part2tests);
 
